@@ -10,8 +10,6 @@ test('single step sync run', t => {
   run.set({
     steps: {
       step1: {
-        timeout: 1000,
-        tryCount: 1,
         run (data, resolve, reject) {
           return data.success.compute() ? resolve() : reject(new Error('some error'))
         }
@@ -63,22 +61,16 @@ test('three step sync run', t => {
   run.set({
     steps: {
       step1: {
-        timeout: 1000,
-        tryCount: 1,
         run (data, resolve, reject) {
           return data.success.compute() ? resolve() : reject(new Error('some error'))
         }
       },
       step2: {
-        timeout: 1000,
-        tryCount: 1,
         run (data, resolve, reject) {
           return data.success.compute() ? resolve() : reject(new Error('some error'))
         }
       },
       step3: {
-        timeout: 1000,
-        tryCount: 1,
         run (data, resolve, reject) {
           return data.success.compute() ? resolve() : reject(new Error('some error'))
         }
