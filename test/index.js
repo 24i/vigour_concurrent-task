@@ -51,6 +51,7 @@ test('single step sync run', t => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 2, done: 2
       }, 'complete status is as expected')
+      run.remove()
     })
     .run()
 })
@@ -62,7 +63,7 @@ test('three step sync run', t => {
     steps: {
       step1: {
         run (data, resolve, reject) {
-          return data.success.compute() ? resolve() : reject(new Error('some error'))
+          return data.success.compute() ? resolve() : reject()
         }
       },
       step2: {
@@ -112,6 +113,7 @@ test('three step sync run', t => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 2, done: 2
       }, 'complete status is as expected')
+      run.remove()
     })
     .run()
 })
@@ -181,6 +183,7 @@ test('two step async run', t => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 3, done: 2
       }, 'complete status is as expected')
+      run.remove()
     })
     .run()
 })
