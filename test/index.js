@@ -162,12 +162,10 @@ test('two step async run', t => {
 
       if ([1, 2].indexOf(ecount) !== -1) {
         t.equals(key, 'task3', 'task3 failed')
-      } else if (ecount === 3) {
+      } else if ([3, 4, 6].indexOf(ecount) !== -1) {
         t.equals(key, 'task2', 'task2 failed')
-      } else if ([4, 7].indexOf(ecount) !== -1) {
+      } else if ([5, 7].indexOf(ecount) !== -1) {
         t.equals(key, 'task4', 'task4 failed')
-      } else if ([5, 6].indexOf(ecount) !== -1) {
-        t.equals(key, 'task2', 'task2 failed')
       }
     })
     .on('task-done', key => {
