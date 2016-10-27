@@ -15,7 +15,7 @@ npm install concurrent-task --save
 
 ## Usage
 
-Below is an example of 5 tasks with 2 steps to execute for each.
+Below is an example of 5 tasks with 2 steps to execute for each. Each step has a `run` method which returns an aborting function. If step is not resolved or rejected in time, it will be aborted with an emit error.
 
 ```js
   const concurrent('concurrent-task')
