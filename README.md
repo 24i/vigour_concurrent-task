@@ -30,7 +30,7 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
         tryCount: 2,
         run (task, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return task.success.compute() ? resolve() : reject(new Error('some error'))
+            return task.success.compute() ? resolve('some result 1') : reject(new Error('some error'))
           }, task.seconds * 1000))
         }
       },
@@ -39,7 +39,7 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
         tryCount: 3,
         run (task, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return task.success.compute() ? resolve() : reject(new Error('some error'))
+            return task.success.compute() ? resolve('some result 2') : reject(new Error('some error'))
           }, task.seconds * 1000))
         }
       }
@@ -60,6 +60,10 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
     })
     .on('task-done', key => {
       // one of tasks completed all steps with no error
+
+      // log the task with results
+      console.log(runner.tasks[key].serialize())
+      // logs something like: { seconds: 0.3, success: true, step1: 'some result 1'}
     })
     .on('complete', () => {
       // all the tasks completed all steps
