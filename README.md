@@ -28,19 +28,19 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
       step1: {
         timeout: 1000,
         tryCount: 2,
-        run (data, resolve, reject) {
+        run (task, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return data.success.compute() ? resolve() : reject(new Error('some error'))
-          }, data.seconds * 1000))
+            return task.success.compute() ? resolve() : reject(new Error('some error'))
+          }, task.seconds * 1000))
         }
       },
       step2: {
         timeout: 500,
         tryCount: 3,
-        run (data, resolve, reject) {
+        run (task, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return data.success.compute() ? resolve() : reject(new Error('some error'))
-          }, data.seconds * 1000))
+            return task.success.compute() ? resolve() : reject(new Error('some error'))
+          }, task.seconds * 1000))
         }
       }
     },
