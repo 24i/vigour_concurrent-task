@@ -5,7 +5,7 @@
 [![npm version](https://badge.fury.io/js/concurrent-task.svg)](https://badge.fury.io/js/concurrent-task)
 [![Coverage Status](https://coveralls.io/repos/github/vigour-io/concurrent-task/badge.svg?branch=master)](https://coveralls.io/github/vigour-io/concurrent-task?branch=master)
 
-An observable to run async tasks in parallel with a concurrency limit
+A `brisky-struct` instance to run async tasks in parallel with a concurrency limit
 
 ## Installing
 
@@ -30,8 +30,8 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
         tryCount: 2,
         run (task, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return task.success.compute() ? resolve('some result 1') : reject(new Error('some error'))
-          }, task.seconds * 1000))
+            return task.get('success').compute() ? resolve('some result 1') : reject(new Error('some error'))
+          }, task.get('seconds') * 1000))
         }
       },
       step2: {
@@ -39,8 +39,8 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
         tryCount: 3,
         run (task, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return task.success.compute() ? resolve('some result 2') : reject(new Error('some error'))
-          }, task.seconds * 1000))
+            return task.get('success').compute() ? resolve('some result 2') : reject(new Error('some error'))
+          }, task.get('seconds') * 1000))
         }
       }
     },
@@ -54,24 +54,27 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
   })
 
   runner
-    .on('error', (key, error) => {
+    .on('error', (runner, key) => {
       // one of tasks had an error on one of steps
       // key is key of task
     })
-    .on('task-done', key => {
+    .on('task-done', (runner, key) => {
       // one of tasks completed all steps with no error
 
       // log the task with results
       console.log(runner.tasks[key].serialize())
       // logs something like: { seconds: 0.3, success: true, step1: 'some result 1'}
     })
-    .on('complete', () => {
+    .on('complete', (runner) => {
       // all the tasks completed all steps
       // if any of them had errors
       // tryCounts are exhausted
 
       // log runner status
       console.log(runner.status())
+      
+      // keep memory clean
+      runner.set(null)
     })
     .run()
 ```
