@@ -2,7 +2,7 @@
 
 const test = require('tape')
 
-const taskRunner = require('./../lib')
+const taskRunner = require('../lib')
 
 test('single step sync run', t => {
   const run = taskRunner(1)
@@ -11,7 +11,7 @@ test('single step sync run', t => {
     steps: {
       step1: {
         run (data, resolve, reject) {
-          return data.success.compute() ? resolve() : reject(new Error('some error'))
+          return data.get('success').compute() ? resolve() : reject(new Error('some error'))
         }
       }
     },
@@ -29,7 +29,7 @@ test('single step sync run', t => {
   t.plan(5)
 
   run
-    .on('error', (key) => {
+    .on('error', (run, key) => {
       ecount++
 
       if (ecount === 1) {
@@ -38,7 +38,7 @@ test('single step sync run', t => {
         t.equals(key, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', key => {
+    .on('task-done', (run, key) => {
       dcount++
 
       if (dcount === 1) {
@@ -47,11 +47,11 @@ test('single step sync run', t => {
         t.equals(key, 'task3', 'task3 done')
       }
     })
-    .on('complete', () => {
+    .on('complete', run => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 2, done: 2
       }, 'complete status is as expected')
-      run.remove()
+      run.set(null)
     })
     .run()
 })
@@ -63,17 +63,17 @@ test('three step sync run', t => {
     steps: {
       step1: {
         run (data, resolve, reject) {
-          return data.success.compute() ? resolve() : reject()
+          return data.get('success').compute() ? resolve() : reject()
         }
       },
       step2: {
         run (data, resolve, reject) {
-          return data.success.compute() ? resolve() : reject(new Error('some error'))
+          return data.get('success').compute() ? resolve() : reject(new Error('some error'))
         }
       },
       step3: {
         run (data, resolve, reject) {
-          return data.success.compute() ? resolve() : reject(new Error('some error'))
+          return data.get('success').compute() ? resolve() : reject(new Error('some error'))
         }
       }
     },
@@ -91,7 +91,7 @@ test('three step sync run', t => {
   t.plan(5)
 
   run
-    .on('error', (key) => {
+    .on('error', (run, key) => {
       ecount++
 
       if (ecount === 1) {
@@ -100,7 +100,7 @@ test('three step sync run', t => {
         t.equals(key, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', key => {
+    .on('task-done', (run, key) => {
       dcount++
 
       if (dcount === 1) {
@@ -109,11 +109,11 @@ test('three step sync run', t => {
         t.equals(key, 'task3', 'task3 done')
       }
     })
-    .on('complete', () => {
+    .on('complete', run => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 2, done: 2
       }, 'complete status is as expected')
-      run.remove()
+      run.set(null)
     })
     .run()
 })
@@ -128,8 +128,8 @@ test('two step async run', t => {
         tryCount: 2,
         run (data, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return data.success.compute() ? resolve() : reject(new Error('some error'))
-          }, data.seconds * 1000))
+            return data.get('success').compute() ? resolve() : reject(new Error('some error'))
+          }, data.get('seconds').compute() * 1000))
         }
       },
       step2: {
@@ -137,8 +137,8 @@ test('two step async run', t => {
         tryCount: 3,
         run (data, resolve, reject) {
           return clearTimeout.bind(null, setTimeout(() => {
-            return data.success.compute() ? resolve() : reject(new Error('some error'))
-          }, data.seconds * 1000))
+            return data.get('success').compute() ? resolve() : reject(new Error('some error'))
+          }, data.get('seconds').compute() * 1000))
         }
       }
     },
@@ -157,7 +157,7 @@ test('two step async run', t => {
   t.plan(10)
 
   run
-    .on('error', (key) => {
+    .on('error', (run, key) => {
       ecount++
 
       if ([1, 2].indexOf(ecount) !== -1) {
@@ -168,7 +168,7 @@ test('two step async run', t => {
         t.equals(key, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', key => {
+    .on('task-done', (run, key) => {
       dcount++
 
       if (dcount === 1) {
@@ -177,11 +177,11 @@ test('two step async run', t => {
         t.equals(key, 'task5', 'task5 done')
       }
     })
-    .on('complete', () => {
+    .on('complete', run => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 3, done: 2
       }, 'complete status is as expected')
-      run.remove()
+      run.set(null)
     })
     .run()
 })
