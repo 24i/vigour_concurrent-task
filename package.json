@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/vigour-io/concurrent-task#readme",
   "dependencies": {
-    "brisky-struct": "0.0.2"
+    "brisky-struct": "0.0.32"
   },
   "devDependencies": {
     "tape": "^4.4.0",
@@ -38,7 +38,6 @@
     "coveralls": "^2.11.9",
     "istanbul": "^0.4.3",
     "standard": "^7.0.1",
-    "vigour-doc": "^1.1.5",
     "pre-commit": "^1.1.3"
   }
 }

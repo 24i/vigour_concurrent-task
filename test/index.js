@@ -29,7 +29,7 @@ test('single step sync run', t => {
   t.plan(5)
 
   run
-    .on('error', (run, key) => {
+    .on('error', (key) => {
       ecount++
 
       if (ecount === 1) {
@@ -38,7 +38,7 @@ test('single step sync run', t => {
         t.equals(key, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', (run, key) => {
+    .on('task-done', (key) => {
       dcount++
 
       if (dcount === 1) {
@@ -47,7 +47,7 @@ test('single step sync run', t => {
         t.equals(key, 'task3', 'task3 done')
       }
     })
-    .on('complete', run => {
+    .on('complete', () => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 2, done: 2
       }, 'complete status is as expected')
@@ -91,7 +91,7 @@ test('three step sync run', t => {
   t.plan(5)
 
   run
-    .on('error', (run, key) => {
+    .on('error', key => {
       ecount++
 
       if (ecount === 1) {
@@ -100,7 +100,7 @@ test('three step sync run', t => {
         t.equals(key, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', (run, key) => {
+    .on('task-done', key => {
       dcount++
 
       if (dcount === 1) {
@@ -109,7 +109,7 @@ test('three step sync run', t => {
         t.equals(key, 'task3', 'task3 done')
       }
     })
-    .on('complete', run => {
+    .on('complete', () => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 2, done: 2
       }, 'complete status is as expected')
@@ -157,7 +157,7 @@ test('two step async run', t => {
   t.plan(10)
 
   run
-    .on('error', (run, key) => {
+    .on('error', key => {
       ecount++
 
       if ([1, 2].indexOf(ecount) !== -1) {
@@ -168,7 +168,7 @@ test('two step async run', t => {
         t.equals(key, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', (run, key) => {
+    .on('task-done', key => {
       dcount++
 
       if (dcount === 1) {
@@ -177,7 +177,7 @@ test('two step async run', t => {
         t.equals(key, 'task5', 'task5 done')
       }
     })
-    .on('complete', run => {
+    .on('complete', () => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 3, done: 2
       }, 'complete status is as expected')
