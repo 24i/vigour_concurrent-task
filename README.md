@@ -62,7 +62,7 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
       // one of tasks completed all steps with no error
 
       // log the task with results
-      console.log(runner.tasks[key].serialize())
+      console.log(runner.get(['tasks', key]).serialize())
       // logs something like: { seconds: 0.3, success: true, step1: 'some result 1'}
     })
     .on('complete', () => {
