@@ -72,6 +72,7 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
 
       // log runner status
       console.log(runner.status())
+      // logs something like: { waiting: 0, running: 0, error: 2, done: 3 }
       
       // keep memory clean
       runner.set(null)
