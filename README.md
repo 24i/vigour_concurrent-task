@@ -72,7 +72,7 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
       
       // log task results
       console.log(runner.results())
-      // logs something like: { task1: 'result', task2: 'result' }
+      // logs something like: { task1: 'result', task5: 'result' }
       
       // keep memory clean
       runner.set(null)
