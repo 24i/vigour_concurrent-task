@@ -4,24 +4,19 @@ const test = require('tape')
 
 const taskRunner = require('../lib')
 
-test('single step sync run', t => {
-  const run = taskRunner(1)
+test('single step sync run with concurrency = 1', t => {
+  const step = { run (task, resolve, reject) {
+    return task.success ? resolve() : reject()
+  } }
 
-  run.set({
-    steps: {
-      step1: {
-        run (data, resolve, reject) {
-          return data.get('success').compute() ? resolve() : reject(new Error('some error'))
-        }
-      }
-    },
-    tasks: {
-      task1: { success: true },
-      task2: { success: false },
-      task3: { success: true },
-      task4: { success: false }
-    }
-  })
+  const run = taskRunner(1, step)
+
+  run.addTask({ id: 'task1', success: true })
+  run.addTask([
+    { id: 'task2', success: false },
+    { id: 'task3', success: true },
+    { id: 'task4', success: false }
+  ])
 
   var ecount = 0
   var dcount = 0
@@ -29,22 +24,22 @@ test('single step sync run', t => {
   t.plan(5)
 
   run
-    .on('error', (key) => {
+    .on('error', (task) => {
       ecount++
 
       if (ecount === 1) {
-        t.equals(key, 'task2', 'task2 failed')
+        t.equals(task.id, 'task2', 'task2 failed')
       } else if (ecount === 2) {
-        t.equals(key, 'task4', 'task4 failed')
+        t.equals(task.id, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', (key) => {
+    .on('task-done', (task) => {
       dcount++
 
       if (dcount === 1) {
-        t.equals(key, 'task1', 'task1 done')
+        t.equals(task.id, 'task1', 'task1 done')
       } else if (dcount === 2) {
-        t.equals(key, 'task3', 'task3 done')
+        t.equals(task.id, 'task3', 'task3 done')
       }
     })
     .on('complete', () => {
@@ -56,34 +51,27 @@ test('single step sync run', t => {
     .run()
 })
 
-test('three step sync run', t => {
-  const run = taskRunner(2)
+test('three step sync run with concurrency = 2', t => {
+  const steps = [
+    { run (task, resolve, reject) {
+      return task.success ? resolve() : reject()
+    } },
+    { run (task, resolve, reject) {
+      return task.success ? resolve() : reject()
+    } },
+    { run (task, resolve, reject) {
+      return task.success ? resolve() : reject()
+    } }
+  ]
 
-  run.set({
-    steps: {
-      step1: {
-        run (data, resolve, reject) {
-          return data.get('success').compute() ? resolve() : reject()
-        }
-      },
-      step2: {
-        run (data, resolve, reject) {
-          return data.get('success').compute() ? resolve() : reject(new Error('some error'))
-        }
-      },
-      step3: {
-        run (data, resolve, reject) {
-          return data.get('success').compute() ? resolve() : reject(new Error('some error'))
-        }
-      }
-    },
-    tasks: {
-      task1: { success: true },
-      task2: { success: false },
-      task3: { success: true },
-      task4: { success: false }
-    }
-  })
+  const run = taskRunner(2, steps)
+
+  run.addTask([
+    { id: 'task1', success: true },
+    { id: 'task2', success: false },
+    { id: 'task3', success: true },
+    { id: 'task4', success: false }
+  ])
 
   var ecount = 0
   var dcount = 0
@@ -91,22 +79,22 @@ test('three step sync run', t => {
   t.plan(5)
 
   run
-    .on('error', key => {
+    .on('error', task => {
       ecount++
 
       if (ecount === 1) {
-        t.equals(key, 'task2', 'task2 failed')
+        t.equals(task.id, 'task2', 'task2 failed')
       } else if (ecount === 2) {
-        t.equals(key, 'task4', 'task4 failed')
+        t.equals(task.id, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', key => {
+    .on('task-done', task => {
       dcount++
 
       if (dcount === 1) {
-        t.equals(key, 'task1', 'task1 done')
+        t.equals(task.id, 'task1', 'task1 done')
       } else if (dcount === 2) {
-        t.equals(key, 'task3', 'task3 done')
+        t.equals(task.id, 'task3', 'task3 done')
       }
     })
     .on('complete', () => {
@@ -119,68 +107,69 @@ test('three step sync run', t => {
 })
 
 test('two step async run', t => {
-  const run = taskRunner(2)
-
-  run.set({
-    steps: {
-      step1: {
-        timeout: 1000,
-        tryCount: 2,
-        run (data, resolve, reject) {
-          return clearTimeout.bind(null, setTimeout(() => {
-            return data.get('success').compute() ? resolve() : reject(new Error('some error'))
-          }, data.get('seconds').compute() * 1000))
-        }
-      },
-      step2: {
-        timeout: 500,
-        tryCount: 3,
-        run (data, resolve, reject) {
-          return clearTimeout.bind(null, setTimeout(() => {
-            return data.get('success').compute() ? resolve() : reject(new Error('some error'))
-          }, data.get('seconds').compute() * 1000))
-        }
+  const steps = [
+    {
+      timeout: 1000,
+      tryCount: 2,
+      run (task, resolve, reject) {
+        return clearTimeout.bind(null, setTimeout(() => {
+          return task.success ? resolve() : reject(new Error('some error'))
+        }, task.seconds * 1000))
       }
     },
-    tasks: {
-      task1: { seconds: 0.3, success: true },
-      task2: { seconds: 0.7, success: true },
-      task3: { seconds: 0.2, success: false },
-      task4: { seconds: 1.2, success: false },
-      task5: { seconds: 0.3, success: true }
+    {
+      timeout: 500,
+      tryCount: 3,
+      run (task, resolve, reject) {
+        return clearTimeout.bind(null, setTimeout(() => {
+          return task.success ? resolve({ [task.id]: true }) : reject(new Error('some error'))
+        }, task.seconds * 1000))
+      }
     }
-  })
+  ]
+  const run = taskRunner(2, steps)
+
+  run.addTask([
+    { id: 'task1', seconds: 0.3, success: true },
+    { id: 'task2', seconds: 0.7, success: true },
+    { id: 'task3', seconds: 0.2, success: false },
+    { id: 'task4', seconds: 1.2, success: false },
+    { id: 'task5', seconds: 0.3, success: true }
+  ])
 
   var ecount = 0
   var dcount = 0
 
-  t.plan(10)
+  t.plan(11)
 
   run
-    .on('error', key => {
+    .on('error', task => {
       ecount++
 
       if ([1, 2].indexOf(ecount) !== -1) {
-        t.equals(key, 'task3', 'task3 failed')
+        t.equals(task.id, 'task3', 'task3 failed')
       } else if ([3, 4, 6].indexOf(ecount) !== -1) {
-        t.equals(key, 'task2', 'task2 failed')
+        t.equals(task.id, 'task2', 'task2 failed')
       } else if ([5, 7].indexOf(ecount) !== -1) {
-        t.equals(key, 'task4', 'task4 failed')
+        t.equals(task.id, 'task4', 'task4 failed')
       }
     })
-    .on('task-done', key => {
+    .on('task-done', task => {
       dcount++
 
       if (dcount === 1) {
-        t.equals(key, 'task1', 'task1 done')
+        t.equals(task.id, 'task1', 'task1 done')
       } else if (dcount === 2) {
-        t.equals(key, 'task5', 'task5 done')
+        t.equals(task.id, 'task5', 'task5 done')
       }
     })
     .on('complete', () => {
       t.deepEqual(run.status(), {
         waiting: 0, running: 0, error: 3, done: 2
       }, 'complete status is as expected')
+      t.deepEqual(run.results(), {
+        task1: true, task5: true
+      }, 'complete results are as expected')
       run.set(null)
     })
     .run()
