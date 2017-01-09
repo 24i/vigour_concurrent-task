@@ -44,6 +44,8 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
   // create a task runner with concurrency limit 2
   const runner = concurrent(2, steps)
 
+  // this method can be called several times
+  // so to add more tasks on the go
   runner.addTask([
     { id: 'task1', seconds: 0.3, success: true },
     { id: 'task2', seconds: 0.7, success: true },
