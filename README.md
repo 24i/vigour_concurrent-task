@@ -41,8 +41,8 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
     }
   ]
 
-  // create a task runner with concurrency limit 2
-  const runner = concurrent(2, steps)
+  // create a task runner with steps
+  const runner = concurrent(steps)
 
   // this method can be called several times
   // so to add more tasks on the go
@@ -79,5 +79,6 @@ Below is an example of 5 tasks with 2 steps to execute for each. Each step has a
       // keep memory clean
       runner.set(null)
     })
-    .run()
+    // run with concurrency limited to 2
+    .run(2)
 ```

@@ -5,11 +5,11 @@ const test = require('tape')
 const taskRunner = require('../lib')
 
 test('single step sync run with concurrency = 1', t => {
-  const step = { run (task, resolve, reject) {
+  const steps = { run (task, resolve, reject) {
     return task.success ? resolve() : reject()
   } }
 
-  const run = taskRunner(1, step)
+  const run = taskRunner(steps)
 
   run.addTask({ id: 'task1', success: true })
   run.addTask([
@@ -48,7 +48,7 @@ test('single step sync run with concurrency = 1', t => {
       }, 'complete status is as expected')
       run.set(null)
     })
-    .run()
+    .run(1)
 })
 
 test('three step sync run with concurrency = 2', t => {
@@ -64,7 +64,7 @@ test('three step sync run with concurrency = 2', t => {
     } }
   ]
 
-  const run = taskRunner(2, steps)
+  const run = taskRunner(steps)
 
   run.addTask([
     { id: 'task1', success: true },
@@ -103,10 +103,10 @@ test('three step sync run with concurrency = 2', t => {
       }, 'complete status is as expected')
       run.set(null)
     })
-    .run()
+    .run(2)
 })
 
-test('two step async run', t => {
+test('two step async run with concurrency = 2', t => {
   const steps = [
     {
       timeout: 1000,
@@ -127,7 +127,7 @@ test('two step async run', t => {
       }
     }
   ]
-  const run = taskRunner(2, steps)
+  const run = taskRunner(steps)
 
   run.addTask([
     { id: 'task1', seconds: 0.3, success: true },
@@ -172,5 +172,5 @@ test('two step async run', t => {
       }, 'complete results are as expected')
       run.set(null)
     })
-    .run()
+    .run(2)
 })
